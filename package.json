@@ -1,0 +1,79 @@
+{
+    "name": "mindful-coding",
+    "displayName": "Mindful Coding",
+    "description": "Reminds you to take breaks for window-gazing and stretching.",
+    "version": "1.0.0",
+    "publisher": "HousebirdGames",
+    "engines": {
+        "vscode": "^1.80.2"
+    },
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./extension.js",
+    "keywords": [
+        "productivity",
+        "mindfulness",
+        "health",
+        "break",
+        "reminder",
+        "stretch",
+        "window-gaze",
+        "well-being"
+    ],
+    "categories": [
+        "Other"
+    ],
+    "icon": "Mindful-Coding-Logo-555x555.png",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/HousebirdGames/Mindful-Coding.git"
+    },
+    "homepage": "https://housebird.games",
+    "contributes": {
+        "configuration": {
+            "properties": {
+                "mindfulCoding.reminderType": {
+                    "type": "string",
+                    "enum": [
+                        "Notification",
+                        "Status Bar",
+                        "Annoying Popup",
+                        "None"
+                    ],
+                    "default": "None",
+                    "description": "Choose how you want the reminders to be shown."
+                },
+                "mindfulCoding.enableWindowGazeReminder": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable or disable the window-gaze reminder."
+                },
+                "mindfulCoding.windowGazeInterval": {
+                    "type": "number",
+                    "default": 20,
+                    "description": "Interval in minutes to remind you to look out of a window."
+                },
+                "mindfulCoding.stretchInterval": {
+                    "type": "number",
+                    "default": 45,
+                    "description": "Interval in minutes to remind you to stretch."
+                },
+                "mindfulCoding.enableStretchReminder": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable or disable the stretch reminder."
+                }
+            }
+        },
+        "commands": [
+            {
+                "command": "mindfulCoding.openSettings",
+                "title": "Open Mindful Coding Settings"
+            }
+        ]
+    },
+    "devDependencies": {
+        "vscode": "^1.80.2"
+    }
+}
