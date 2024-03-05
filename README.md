@@ -19,7 +19,7 @@ Choose how you receive reminders:
 
 1. **Install Mindful Coding** from the VSCode Marketplace.
 2. **Configure your preferences** in the VSCode settings under `Extensions > Mindful Coding`.
-    - Set reminder intervals.
+    - Set reminder intervals (minimum time is 1 Minute).
     - Choose the reminder type.
     - Enable or disable specific reminders.
 

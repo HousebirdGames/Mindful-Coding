@@ -72,7 +72,9 @@ function resetSettings() {
     return Promise.all([
         config.update('reminderType', undefined, vscode.ConfigurationTarget.Global),
         config.update('windowGazeInterval', undefined, vscode.ConfigurationTarget.Global),
-        config.update('stretchInterval', undefined, vscode.ConfigurationTarget.Global)
+        config.update('stretchInterval', undefined, vscode.ConfigurationTarget.Global),
+        config.update('enableWindowGazeReminder', undefined, vscode.ConfigurationTarget.Global),
+        config.update('enableStretchReminder', undefined, vscode.ConfigurationTarget.Global)
     ]);
 }
 
@@ -102,8 +104,16 @@ function setupReminders(context, updatedSettings = false) {
 
     const enableWindowGazeReminder = config.get('enableWindowGazeReminder', true);
     const enableStretchReminder = config.get('enableStretchReminder', true);
-    const windowGazeTimer = config.get('windowGazeInterval') * 60000;
-    const stretchTimer = config.get('stretchInterval') * 60000;
+    let windowGazeTimer = config.get('windowGazeInterval') * 60000;
+    let stretchTimer = config.get('stretchInterval') * 60000;
+
+    if (windowGazeTimer < 60000) {
+        windowGazeTimer = 60000;
+    }
+
+    if (stretchTimer < 60000) {
+        stretchTimer = 60000;
+    }
 
     if (enableWindowGazeReminder) {
         windowGazeIntervalId = setInterval(() => {
@@ -122,7 +132,7 @@ function setupReminders(context, updatedSettings = false) {
     }
     else {
         vscode.window.showInformationMessage('Mindful Reminder is active. You can change it anytime in the settings.', 'Settings', 'Alright').then(selection => {
-            if (selection === 'Open Settings') {
+            if (selection === 'Settings') {
                 vscode.commands.executeCommand('workbench.action.openSettings', 'mindfulCoding');
             }
         });
@@ -130,23 +140,30 @@ function setupReminders(context, updatedSettings = false) {
     }
 }
 
-function showReminder(message) {
-    console.log('showReminder', reminderType);
+let lastPopupTimestampKey = 'mindfulCoding.lastPopupTimestamp';
+
+function showReminder(message, context) {
     if (reminderType === 'None') {
         return;
     }
+
+    let now = new Date().getTime();
+    let lastPopupTimestamp = context.globalState.get(lastPopupTimestampKey, 0);
+    let popupCooldown = 50000;
 
     if (reminderType === 'Status Bar') {
         statusBarReminder.text = `$(clock) ${message}`;
         statusBarReminder.tooltip = "Click when done";
         statusBarReminder.show();
-    }
-    else if (reminderType === 'Annoying Popup') {
-        vscode.window.showInformationMessage(message, { modal: true }, 'Done').then(selection => {
-            if (selection === 'Done') {
-                displayStatusBarMessage(thankYouMessage);
-            }
-        });
+    } else if (reminderType === 'Annoying Popup') {
+        if (now - lastPopupTimestamp > popupCooldown) {
+            vscode.window.showInformationMessage(message, { modal: true }, 'Done').then(selection => {
+                if (selection === 'Done') {
+                    displayStatusBarMessage(thankYouMessage);
+                    context.globalState.update(lastPopupTimestampKey, now);
+                }
+            });
+        }
     } else {
         vscode.window.showInformationMessage(message, 'Done').then(selection => {
             if (selection === 'Done' && reminderType === 'Notification') {
