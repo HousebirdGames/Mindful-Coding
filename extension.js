@@ -47,12 +47,12 @@ function activate(context) {
 async function promptForSettingsReset(context) {
     const reminderType = vscode.workspace.getConfiguration('mindfulCoding').get('reminderType');
     if (reminderType !== undefined) {
-        const selection = await vscode.window.showInformationMessage('You have existing reminder settings. Would you like to keep them or reset to defaults?', 'Keep', 'Reset');
+        const selection = await vscode.window.showInformationMessage('You have existing settings for Mindful Coding. Would you like to keep them or reset to defaults?', 'Keep', 'Reset');
         if (selection === 'Reset') {
             await resetSettings();
+            askReminderModeNotification(context);
         }
     }
-    askReminderModeNotification(context);
 }
 
 function askReminderModeNotification(context) {
@@ -81,7 +81,7 @@ function resetSettings() {
 function askReminderMode(context) {
     const config = vscode.workspace.getConfiguration('mindfulCoding');
     vscode.window.showQuickPick(['Notification', 'Status Bar', 'Annoying Popup', 'None'], {
-        placeHolder: 'How do you want your reminders? Obstructive requires action to dismiss.',
+        placeHolder: 'How do you want your reminders? Annoying Popup requires action to dismiss.',
     }).then(selection => {
         const reminderMode = selection ? selection : 'None';
         config.update('reminderType', reminderMode, vscode.ConfigurationTarget.Global);
@@ -117,13 +117,13 @@ function setupReminders(context, updatedSettings = false) {
 
     if (enableWindowGazeReminder) {
         windowGazeIntervalId = setInterval(() => {
-            showReminder('Time to gaze out of a window. 🌳');
+            showReminder('Time to gaze out of a window. 🌳', context);
         }, windowGazeTimer);
     }
 
     if (enableStretchReminder) {
         stretchIntervalId = setInterval(() => {
-            showReminder('Time to stretch. 😺');
+            showReminder('Time to stretch. 😺', context);
         }, stretchTimer);
     }
 
@@ -131,12 +131,12 @@ function setupReminders(context, updatedSettings = false) {
         displayStatusBarMessage('Mindful Coding settings updated');
     }
     else {
-        vscode.window.showInformationMessage('Mindful Reminder is active. You can change it anytime in the settings.', 'Settings', 'Alright').then(selection => {
+        vscode.window.showInformationMessage('Mindful Coding is active. You can change the reminders anytime in the settings.', 'Settings', 'Alright').then(selection => {
             if (selection === 'Settings') {
                 vscode.commands.executeCommand('workbench.action.openSettings', 'mindfulCoding');
             }
         });
-        displayStatusBarMessage('Mindful Coding is active (' + reminderType.toLowerCase() + ')');
+        displayStatusBarMessage('Mindful Coding is active (' + reminderType + ')');
     }
 }
 
@@ -144,6 +144,11 @@ let lastPopupTimestampKey = 'mindfulCoding.lastPopupTimestamp';
 
 function showReminder(message, context) {
     if (reminderType === 'None') {
+        return;
+    }
+
+    if (!context || !context.globalState) {
+        console.error('Context or global state is undefined');
         return;
     }
 
@@ -175,7 +180,7 @@ function showReminder(message, context) {
 
 function displayStatusBarMessage(message) {
     statusBarReminder.text = `$(check) ${message}`;
-    statusBarReminder.tooltip = "Break reminder acknowledgment";
+    statusBarReminder.tooltip = "Acknowledge the message";
     statusBarReminder.show();
 
     setTimeout(() => statusBarReminder.hide(), 5000);

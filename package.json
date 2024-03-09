@@ -2,7 +2,7 @@
     "name": "mindful-coding",
     "displayName": "Mindful Coding",
     "description": "Reminds you to take breaks for window-gazing and stretching.",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "publisher": "HousebirdGames",
     "engines": {
         "vscode": "^1.80.2"
