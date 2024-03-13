@@ -2,7 +2,7 @@
     "name": "mindful-coding",
     "displayName": "Mindful Coding",
     "description": "Reminds you to take breaks for window-gazing and stretching.",
-    "version": "1.0.3",
+    "version": "1.0.6",
     "publisher": "HousebirdGames",
     "engines": {
         "vscode": "^1.80.2"
@@ -24,7 +24,7 @@
     "categories": [
         "Other"
     ],
-    "icon": "Mindful-Coding-Logo-555x555.png",
+    "icon": "Mindful-Coding-Logo.png",
     "repository": {
         "type": "git",
         "url": "https://github.com/HousebirdGames/Mindful-Coding.git"
@@ -54,15 +54,15 @@
                     "default": 20,
                     "description": "Interval in minutes to remind you to look out of a window."
                 },
-                "mindfulCoding.stretchInterval": {
-                    "type": "number",
-                    "default": 45,
-                    "description": "Interval in minutes to remind you to stretch."
-                },
                 "mindfulCoding.enableStretchReminder": {
                     "type": "boolean",
                     "default": true,
                     "description": "Enable or disable the stretch reminder."
+                },
+                "mindfulCoding.stretchInterval": {
+                    "type": "number",
+                    "default": 45,
+                    "description": "Interval in minutes to remind you to stretch."
                 }
             }
         },
