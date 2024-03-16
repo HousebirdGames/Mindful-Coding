@@ -2,9 +2,9 @@
 
 All notable changes to the Mindful Coding extension will be documented in this file.
 
-## 1.0.7
+## 1.0.7 to 1.0.9
 
-- Switched to a colored version of the logo
+- Logo iterations
 
 ## 1.0.4 to 1.0.6
 
