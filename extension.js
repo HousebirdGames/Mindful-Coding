@@ -4,7 +4,7 @@ let statusBarReminder, statusBarInfo, reminderIntervals = {};
 const thankYouMessage = 'Great! 👍';
 
 let config = vscode.workspace.getConfiguration('mindfulCoding');
-let reminderType = config.get('reminderType', 'None');
+let reminderType = config.get('general.reminderType', 'None');
 
 function activate(context) {
     context.subscriptions.push(
@@ -29,7 +29,7 @@ function activate(context) {
     }
 
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
-        if (['windowGazeInterval', 'stretchInterval', 'reminderType', 'enableWindowGazeReminder', 'enableStretchReminder']
+        if (['windowGaze.interval', 'stretch.interval', 'general.reminderType', 'windowGaze.enable', 'stretch.enable', 'customReminders.enable', 'customReminders.list']
             .some(setting => e.affectsConfiguration(`mindfulCoding.${setting}`))) {
             setupReminders(context, true);
         }
@@ -55,7 +55,7 @@ function setupStatusBarItems(context) {
 }
 
 async function promptForSettingsReset(context) {
-    const reminderTypeConfig = vscode.workspace.getConfiguration('mindfulCoding').get('reminderType');
+    const reminderTypeConfig = vscode.workspace.getConfiguration('mindfulCoding').get('general.reminderType');
     if (reminderTypeConfig !== undefined) {
         const selection = await vscode.window.showInformationMessage('You have existing settings for Mindful Coding. Would you like to keep them or reset to defaults?', 'Keep', 'Reset');
         if (selection === 'Reset') {
@@ -68,13 +68,13 @@ async function promptForSettingsReset(context) {
 async function resetSettings() {
     config = vscode.workspace.getConfiguration('mindfulCoding');
     await Promise.all([
-        'reminderType', 'windowGazeInterval', 'stretchInterval', 'enableWindowGazeReminder', 'enableStretchReminder'
+        'general.reminderType', 'windowGaze.interval', 'stretch.interval', 'windowGaze.enable', 'stretch.enable', 'customReminders.enable', 'customReminders.list'
     ].map(setting => config.update(setting, undefined, vscode.ConfigurationTarget.Global)));
 }
 
 function setupReminders(context, updatedSettings = false) {
     config = vscode.workspace.getConfiguration('mindfulCoding');
-    reminderType = config.get('reminderType', 'None');
+    reminderType = config.get('general.reminderType', 'None');
 
     Object.values(reminderIntervals).forEach(clearInterval);
 
@@ -83,17 +83,16 @@ function setupReminders(context, updatedSettings = false) {
         return;
     }
 
-    if (config.get('enableWindowGazeReminder')) {
-        reminderIntervals['windowGaze'] = setupInterval('Time to gaze out of a window. 🌳', config.get('windowGazeInterval'), context);
+    if (config.get('windowGaze.enable')) {
+        reminderIntervals['windowGaze'] = setupInterval('Time to gaze out of a window. 🌳', config.get('windowGaze.interval'), context);
     }
 
-    if (config.get('enableStretchReminder')) {
-        reminderIntervals['stretch'] = setupInterval('Time to stretch. 😺', config.get('stretchInterval'), context);
+    if (config.get('stretch.enable')) {
+        reminderIntervals['stretch'] = setupInterval('Time to stretch. 😺', config.get('stretch.interval'), context);
     }
 
-    // Check if custom reminders are enabled
-    if (config.get('enableCustomReminders', true)) {
-        const customReminders = config.get('customReminders', []);
+    if (config.get('customReminders.enable', true)) {
+        const customReminders = config.get('customReminders.list', []);
         customReminders.forEach((reminder, index) => {
             reminderIntervals[`custom_${index}`] = setupInterval(reminder.text, reminder.interval, context);
         });
@@ -178,7 +177,7 @@ function displayStatusBarMessage(message) {
 
 function manageCustomReminders(context) {
     const config = vscode.workspace.getConfiguration('mindfulCoding');
-    const customReminders = config.get('customReminders', []);
+    const customReminders = config.get('customReminders.list', []);
 
     const quickPickItems = customReminders.map((reminder, index) => ({
         label: `${reminder.text} (every ${reminder.interval} minutes)`,
@@ -224,15 +223,15 @@ async function addCustomReminder(context) {
     if (!interval) return;
 
     const config = vscode.workspace.getConfiguration('mindfulCoding');
-    const customReminders = config.get('customReminders', []);
+    const customReminders = config.get('customReminders.list', []);
     customReminders.push({ text, interval: parseInt(interval) });
-    await config.update('customReminders', customReminders, vscode.ConfigurationTarget.Global);
+    await config.update('customReminders.list', customReminders, vscode.ConfigurationTarget.Global);
     setupReminders(context, true);
 }
 
 async function editCustomReminder(context, index) {
     const config = vscode.workspace.getConfiguration('mindfulCoding');
-    const customReminders = config.get('customReminders', []);
+    const customReminders = config.get('customReminders.list', []);
     const reminder = customReminders[index];
 
     const text = await vscode.window.showInputBox({
@@ -250,16 +249,16 @@ async function editCustomReminder(context, index) {
     if (!interval) return;
 
     customReminders[index] = { text, interval: parseInt(interval) };
-    await config.update('customReminders', customReminders, vscode.ConfigurationTarget.Global);
+    await config.update('customReminders.list', customReminders, vscode.ConfigurationTarget.Global);
     setupReminders(context, true);
 }
 
 async function deleteCustomReminder(context, index) {
     const config = vscode.workspace.getConfiguration('mindfulCoding');
-    const customReminders = config.get('customReminders', []);
+    const customReminders = config.get('customReminders.list', []);
 
     customReminders.splice(index, 1);
-    await config.update('customReminders', customReminders, vscode.ConfigurationTarget.Global);
+    await config.update('customReminders.list', customReminders, vscode.ConfigurationTarget.Global);
     setupReminders(context, true);
 
     vscode.window.showInformationMessage('Custom reminder deleted successfully.');

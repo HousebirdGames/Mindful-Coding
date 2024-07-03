@@ -2,7 +2,7 @@
     "name": "mindful-coding",
     "displayName": "Mindful Coding",
     "description": "Reminds you to take breaks for window-gazing and stretching.",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "publisher": "HousebirdGames",
     "engines": {
         "vscode": "^1.80.2"
@@ -50,7 +50,7 @@
                 "mindfulCoding.windowGaze.enable": {
                     "type": "boolean",
                     "default": true,
-                    "description": "Enable or disable the window-gaze reminder.",
+                    "description": "Enable the window-gaze reminder.",
                     "order": 2
                 },
                 "mindfulCoding.windowGaze.interval": {
@@ -62,7 +62,7 @@
                 "mindfulCoding.stretch.enable": {
                     "type": "boolean",
                     "default": true,
-                    "description": "Enable or disable the stretch reminder.",
+                    "description": "Enable the stretch reminder.",
                     "order": 4
                 },
                 "mindfulCoding.stretch.interval": {

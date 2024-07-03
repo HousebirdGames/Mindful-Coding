@@ -2,7 +2,7 @@
 
 All notable changes to the Mindful Coding extension will be documented in this file.
 
-## 1.1.0
+## 1.1.0 to 1.1.1
 - Custom reminders feature
     - Users can now add, edit, and delete their own custom reminders
     - New command: "Manage Custom Reminders"
