@@ -1,7 +1,7 @@
 const vscode = require('vscode');
 
 let statusBarReminder, statusBarInfo, reminderIntervals = {};
-const thankYouMessage = 'Great! Thanks for taking a break. 👍';
+const thankYouMessage = 'Great! 👍';
 
 let config = vscode.workspace.getConfiguration('mindfulCoding');
 let reminderType = config.get('reminderType', 'None');
@@ -34,6 +34,12 @@ function activate(context) {
             setupReminders(context, true);
         }
     }));
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('mindfulCoding.manageCustomReminders', () => {
+            manageCustomReminders(context);
+        })
+    );
 }
 
 function setupStatusBarItems(context) {
@@ -72,7 +78,7 @@ function setupReminders(context, updatedSettings = false) {
 
     Object.values(reminderIntervals).forEach(clearInterval);
 
-    if (reminderType === 'None' || (!config.get('enableWindowGazeReminder') && !config.get('enableStretchReminder'))) {
+    if (reminderType === 'None') {
         displayStatusBarInfo('$(gear) Mindful Coding is disabled');
         return;
     }
@@ -83,6 +89,14 @@ function setupReminders(context, updatedSettings = false) {
 
     if (config.get('enableStretchReminder')) {
         reminderIntervals['stretch'] = setupInterval('Time to stretch. 😺', config.get('stretchInterval'), context);
+    }
+
+    // Check if custom reminders are enabled
+    if (config.get('enableCustomReminders', true)) {
+        const customReminders = config.get('customReminders', []);
+        customReminders.forEach((reminder, index) => {
+            reminderIntervals[`custom_${index}`] = setupInterval(reminder.text, reminder.interval, context);
+        });
     }
 
     if (updatedSettings) {
@@ -160,6 +174,113 @@ function displayStatusBarMessage(message) {
     statusBarMessageTimeout = setTimeout(() => {
         statusBarReminder.hide();
     }, 5000);
+}
+
+function manageCustomReminders(context) {
+    const config = vscode.workspace.getConfiguration('mindfulCoding');
+    const customReminders = config.get('customReminders', []);
+
+    const quickPickItems = customReminders.map((reminder, index) => ({
+        label: `${reminder.text} (every ${reminder.interval} minutes)`,
+        description: `Custom Reminder ${index + 1}`,
+        reminder: reminder,
+        index: index
+    }));
+
+    quickPickItems.push({ label: '$(add) Add new custom reminder', description: 'Create a new custom reminder' });
+
+    vscode.window.showQuickPick(quickPickItems, {
+        placeHolder: 'Select a custom reminder to edit, delete, or add a new one'
+    }).then(selected => {
+        if (selected) {
+            if (selected.reminder) {
+                vscode.window.showQuickPick(['Edit', 'Delete'], {
+                    placeHolder: 'Edit or delete this reminder?'
+                }).then(action => {
+                    if (action === 'Edit') {
+                        editCustomReminder(context, selected.index);
+                    } else if (action === 'Delete') {
+                        deleteCustomReminder(context, selected.index);
+                    }
+                });
+            } else {
+                addCustomReminder(context);
+            }
+        }
+    });
+}
+
+async function addCustomReminder(context) {
+    const text = await vscode.window.showInputBox({
+        prompt: 'Enter the reminder text',
+        validateInput: validateReminderText
+    });
+    if (!text) return;
+
+    const interval = await vscode.window.showInputBox({
+        prompt: 'Enter the interval in minutes (minimum 1 minute)',
+        validateInput: validateNumber
+    });
+    if (!interval) return;
+
+    const config = vscode.workspace.getConfiguration('mindfulCoding');
+    const customReminders = config.get('customReminders', []);
+    customReminders.push({ text, interval: parseInt(interval) });
+    await config.update('customReminders', customReminders, vscode.ConfigurationTarget.Global);
+    setupReminders(context, true);
+}
+
+async function editCustomReminder(context, index) {
+    const config = vscode.workspace.getConfiguration('mindfulCoding');
+    const customReminders = config.get('customReminders', []);
+    const reminder = customReminders[index];
+
+    const text = await vscode.window.showInputBox({
+        prompt: 'Enter the new reminder text',
+        value: reminder.text,
+        validateInput: validateReminderText
+    });
+    if (!text) return;
+
+    const interval = await vscode.window.showInputBox({
+        prompt: 'Enter the new interval in minutes (minimum 1 minute)',
+        value: reminder.interval.toString(),
+        validateInput: validateNumber
+    });
+    if (!interval) return;
+
+    customReminders[index] = { text, interval: parseInt(interval) };
+    await config.update('customReminders', customReminders, vscode.ConfigurationTarget.Global);
+    setupReminders(context, true);
+}
+
+async function deleteCustomReminder(context, index) {
+    const config = vscode.workspace.getConfiguration('mindfulCoding');
+    const customReminders = config.get('customReminders', []);
+
+    customReminders.splice(index, 1);
+    await config.update('customReminders', customReminders, vscode.ConfigurationTarget.Global);
+    setupReminders(context, true);
+
+    vscode.window.showInformationMessage('Custom reminder deleted successfully.');
+}
+
+function validateNumber(value) {
+    const num = parseInt(value);
+    if (isNaN(num)) {
+        return 'Please enter a valid number';
+    }
+    if (num < 1) {
+        return 'The minimum interval is 1 minute';
+    }
+    return null;
+}
+
+function validateReminderText(value) {
+    if (!value || value.trim() === '') {
+        return 'The reminder message cannot be empty';
+    }
+    return null;
 }
 
 function deactivate() {

@@ -2,7 +2,7 @@
     "name": "mindful-coding",
     "displayName": "Mindful Coding",
     "description": "Reminds you to take breaks for window-gazing and stretching.",
-    "version": "1.0.9",
+    "version": "1.1.0",
     "publisher": "HousebirdGames",
     "engines": {
         "vscode": "^1.80.2"
@@ -24,6 +24,7 @@
     "categories": [
         "Other"
     ],
+    "license": "MIT",
     "icon": "Mindful-Coding-Logo.png",
     "repository": {
         "type": "git",
@@ -32,8 +33,9 @@
     "homepage": "https://housebird.games",
     "contributes": {
         "configuration": {
+            "title": "Mindful Coding",
             "properties": {
-                "mindfulCoding.reminderType": {
+                "mindfulCoding.general.reminderType": {
                     "type": "string",
                     "enum": [
                         "Notification",
@@ -42,34 +44,74 @@
                         "None"
                     ],
                     "default": "None",
-                    "description": "Choose how you want the reminders to be shown."
+                    "description": "Choose how you want the reminders to be shown.",
+                    "order": 1
                 },
-                "mindfulCoding.enableWindowGazeReminder": {
+                "mindfulCoding.windowGaze.enable": {
                     "type": "boolean",
                     "default": true,
-                    "description": "Enable or disable the window-gaze reminder."
+                    "description": "Enable or disable the window-gaze reminder.",
+                    "order": 2
                 },
-                "mindfulCoding.windowGazeInterval": {
+                "mindfulCoding.windowGaze.interval": {
                     "type": "number",
                     "default": 20,
-                    "description": "Interval in minutes to remind you to look out of a window."
+                    "description": "Interval in minutes to remind you to look out of a window.",
+                    "order": 3
                 },
-                "mindfulCoding.enableStretchReminder": {
+                "mindfulCoding.stretch.enable": {
                     "type": "boolean",
                     "default": true,
-                    "description": "Enable or disable the stretch reminder."
+                    "description": "Enable or disable the stretch reminder.",
+                    "order": 4
                 },
-                "mindfulCoding.stretchInterval": {
+                "mindfulCoding.stretch.interval": {
                     "type": "number",
                     "default": 45,
-                    "description": "Interval in minutes to remind you to stretch."
+                    "description": "Interval in minutes to remind you to stretch.",
+                    "order": 5
+                },
+                "mindfulCoding.customReminders.enable": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable all custom reminders.",
+                    "order": 6
+                },
+                "mindfulCoding.customReminders.list": {
+                    "type": "array",
+                    "default": [],
+                    "description": "Custom reminders with user-defined text and intervals. Use the 'Manage Custom Reminders' command to edit these.",
+                    "items": {
+                        "type": "object",
+                        "required": [
+                            "text",
+                            "interval"
+                        ],
+                        "properties": {
+                            "text": {
+                                "type": "string",
+                                "description": "The reminder message (cannot be empty)",
+                                "minLength": 1
+                            },
+                            "interval": {
+                                "type": "integer",
+                                "description": "Interval in minutes (minimum 1)",
+                                "minimum": 1
+                            }
+                        }
+                    },
+                    "order": 7
                 }
             }
         },
         "commands": [
             {
                 "command": "mindfulCoding.openSettings",
-                "title": "Open Mindful Coding Settings"
+                "title": "Mindful Coding: Open Settings"
+            },
+            {
+                "command": "mindfulCoding.manageCustomReminders",
+                "title": "Mindful Coding: Manage Custom Reminders"
             }
         ]
     },
